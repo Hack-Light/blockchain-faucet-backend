@@ -1,0 +1,63 @@
+version: 2.1
+
+jobs:
+  lint-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end build
+          command: |
+            npm install
+            npm run lint
+          #  exit 1
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+
+  test-backend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      # Restore from cache
+      - restore_cache:
+          keys: [backend-build]
+      # Your job code here
+      - run:
+          name: Test Backend
+          command: |
+            cd backend
+            npm install
+            npm run test
+
+  scan-backend:
+    docker:
+      # Docker image here
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      # Restore from cache
+      - restore_cache:
+          keys: [backend-build]
+      # Your job code here
+      - run:
+          name: Test Backend
+          command: |
+            npm install
+            npm audit
+
+workflows:
+  default:
+    jobs:
+      - lint-backend
+      - scan-backend:
+          requires: [lint-backend]
+      # - test-backend:
+      #     requires: [scan-backend]
