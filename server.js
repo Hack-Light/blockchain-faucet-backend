@@ -6,20 +6,11 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const express = require("express")
-
+const route = require("./src/routes/routes.js")
+const path = require("path")
 const app = express()
 
-app.use("*", (_req, _res) => {
-    _res.status(404).json({
-        success: false,
-        message: "Page not found",
-        error: {
-            statusCode: 404,
-            message:
-                "You are trying to access a route that is not defined on this server.",
-        },
-    })
-})
+app.use("/", route)
 
 let port = process.env.PORT || 8080
 
@@ -27,3 +18,4 @@ app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`App listening on port ${port}`)
 })
+ 
