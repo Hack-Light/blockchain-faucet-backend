@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 /* eslint-disable strict */
 // eslint-disable-next-line strict
 /* eslint-disable no-param-reassign */
@@ -10,7 +11,8 @@
 /* eslint-disable strict */
 
 let { fail, success } = require("../utils/response.util")
-const { walletDb, requestDb } = require("../models/models")
+const { walletDb } = require("../models/models")
+const { transferFund } = require("../services/transfer-fund")
 
 exports.Request = (_req, _res) => {
     const { address } = _req.body
@@ -24,6 +26,20 @@ exports.Request = (_req, _res) => {
     if (!wallet) {
         wallet = walletDb.create({ address })
         // send token
+        let { hash, rStatus } = transferFund(address.split(","[0]), 0.5)
+        if (rStatus) {
+            console.log(hash)
+            walletDb.save({
+                lastFunded: Date.now,
+            })
+            return success(_res, 200, "Fund transfered successfully")
+        } else {
+            return fail(
+                _res,
+                500,
+                "Token could not be transfered, try agin later"
+            )
+        }
     } else {
         // check the time diffrence between the date now and last request
         let timeDiff = Date.now() - wallet.lastFunded
@@ -31,7 +47,21 @@ exports.Request = (_req, _res) => {
             return fail(_res, 400, "You can only request once a day")
         }
         // send token
-        return success(_res, 200, "Token sent")
+        let { hash, rStatus } = transferFund(address.split(","[0]), 0.5)
+
+        if (rStatus) {
+            console.log(hash)
+            walletDb.save({
+                lastFunded: Date.now,
+            })
+            return success(_res, 200, "Fund transfered successfully")
+        } else {
+            return fail(
+                _res,
+                500,
+                "Token could not be transfered, try agin later"
+            )
+        }
     }
 
     // then send token

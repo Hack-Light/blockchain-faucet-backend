@@ -7,7 +7,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express")
 const route = require("./src/routes/routes.js")
-const path = require("path")
+// const path = require("path")
 const app = express()
 
 app.use("/", route)
