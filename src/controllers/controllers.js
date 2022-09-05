@@ -14,19 +14,20 @@ let { fail, success } = require("../utils/response.util")
 const { walletDb } = require("../models/models")
 const { transferFund } = require("../services/transfer-fund")
 
-exports.Request = (_req, _res) => {
+exports.Request = async(_req, _res) => {
     const { address } = _req.body
     // validate data
     if (!address) {
-        return fail(_res, 422, "Adress is required to complete the request")
+        return fail(_res, 422, "Address is required to complete the request")
     }
     // check if address exist it db
     let wallet = walletDb.find(address)
+    // console.log(address[0])
 
     if (!wallet) {
         wallet = walletDb.create({ address })
         // send token
-        let { hash, rStatus } = transferFund(address.split(","[0]), 0.5)
+        let { hash, rStatus } = transferFund(address[0], 0.01)
         if (rStatus) {
             console.log(hash)
             walletDb.save({
@@ -47,7 +48,7 @@ exports.Request = (_req, _res) => {
             return fail(_res, 400, "You can only request once a day")
         }
         // send token
-        let { hash, rStatus } = transferFund(address.split(","[0]), 0.5)
+        let { hash, rStatus } = await transferFund(address.split(","[0]), 0.5)
 
         if (rStatus) {
             console.log(hash)

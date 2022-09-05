@@ -17,16 +17,7 @@ const mongoose = require("mongoose")
 const Schema = mongoose.Schema
 const uuid = require("uuid")
 
-// Set up default mongoose connection
-const mongoDB = "mongodb://127.0.0.1:27017/faucetdatabase"
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true })
 
-// Get the default connection
-const db = mongoose.connection
-
-// Bind connection to error event (to get notification of connection errors)
-// eslint-disable-next-line no-console
-db.on("error", console.error.bind(console, "MongoDB connection error:"))
 
 // creating REQUEST database class
 class _Request {
@@ -190,7 +181,7 @@ class _Wallet {
       */
         // create id
         let _id = uuid.v4()
-        let mData = { id: _id, lastfunded: 0, address: addr + "", amount: 0 }
+        let mData = { id: _id, lastfunded: 0, address: addr.address + "", amount: 0 }
         new this.model(mData).save((err) => {
             if (err) return{ status: "error", msg: "Internal database error" }
             return { status: true , _id}

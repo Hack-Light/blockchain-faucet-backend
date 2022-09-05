@@ -13,9 +13,10 @@
 
 const Web3 = require("web3")
 
-const { API_URL, PRIVATE_KEY, PUBLIC_KEY, CHAINID } = process.env
+const { API_URL, PRIVATE_KEY, PUBLIC_KEY } = process.env
 
 const web3 = new Web3(new Web3.providers.HttpProvider(API_URL))
+// const privateKey = Buffer.from(PRIVATE_KEY, "hex")
 
 exports.transferFund = async (recieverData, amountToSend) => {
     try {
@@ -29,35 +30,31 @@ exports.transferFund = async (recieverData, amountToSend) => {
         }
 
         const gasPrice = await web3.eth.getGasPrice()
-
-        console.log(balance + " INDO")
+        console.log(gasPrice)
 
         let details = {
-            to: recieverData.address,
+            to: recieverData.toString(),
             value: web3.utils.toHex(
                 web3.utils.toWei(amountToSend.toString(), "ether")
             ),
-            gas: 21000,
-            gasPrice: gasPrice * 1000000000,
+            gas: web3.utils.toHex(53000),
+            gasPrice: web3.utils.toHex(10000000000),
             nonce: nonce,
-            chainId: CHAINID,
+            // chainId: CHAINID,
         }
 
-        // const transaction = {
-        //     'to': '0x31B98D14007bDEe637298086988A0bBd31184523', // faucet address to return eth
-        //     'value': 1000000000000000000, // 1 ETH
-        //     'gas': 30000,
-        //     'nonce': nonce,
-        //     // optional data field to send message or execute smart contract
-        // };
-
+        // const serializedTx = tx.serialize()
         const signedTx = await web3.eth.accounts.signTransaction(
             details,
             PRIVATE_KEY
         )
 
-        let hash = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-        return { rStatus: true, hash: hash }
+        await web3.eth
+            .sendSignedTransaction(signedTx.rawTransaction)
+            .on("receipt", function (receipt) {
+                console.log(receipt)
+                // return { rStatus: true, hash: hash }
+            })
     } catch (error) {
         console.log(error)
         return { rStatus: false, hash: null }

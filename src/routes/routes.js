@@ -5,15 +5,15 @@
     of the faucet system
 */
 const express = require("express")
+
+let { Request } = require("../controllers/controllers.js")
+
 const router = express.Router()
-const dataParser = require("body-parser")
-express().use(dataParser.json({ extended: true }))
+
 // creating main routing functions
 // using POST for main functions
 // new transaction request endpoint
-router.post("/new", (req, res) => {
-    res.send("Hi, this a new transaction request API endpoint")
-})
+router.post("/new", Request)
 
 // Get transaction request status endpoint
 router.post("/tx", (req, res) => {
