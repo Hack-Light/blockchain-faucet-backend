@@ -30,13 +30,11 @@ exports.transferFund = async (recieverData, amountToSend) => {
         }
 
         const gasPrice = await web3.eth.getGasPrice()
-        console.log(gasPrice)
+        console.log(gasPrice, amountToSend)
 
         let details = {
             to: recieverData.toString(),
-            value: web3.utils.toHex(
-                web3.utils.toWei(amountToSend.toString(), "ether")
-            ),
+            value: web3.utils.toHex(web3.utils.toWei(amountToSend.toString())),
             gas: web3.utils.toHex(53000),
             gasPrice: web3.utils.toHex(10000000000),
             nonce: nonce,
