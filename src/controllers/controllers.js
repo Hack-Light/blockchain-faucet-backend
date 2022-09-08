@@ -27,20 +27,22 @@ exports.Request = async (_req, _res) => {
     if (!wallet) {
         wallet = walletDb.create({ address })
         // send token
-        let { hash, rStatus } = transferFund(address[0], 30)
-        if (rStatus) {
-            console.log(hash)
-            walletDb.save({
-                lastFunded: Date.now,
-            })
-            return success(_res, 200, "Fund transfered successfully")
-        } else {
-            return fail(
-                _res,
-                500,
-                "Token could not be transfered, try agin later"
-            )
-        }
+        transferFund(address[0], 30, function(json){
+            if (json.rStatus) {
+                walletDb.save({
+                    lastFunded: Date.now,
+                })
+                return success(_res, 200, "Fund transfered successfully")
+            } 
+            else {
+                return fail(
+                    _res,
+                    500,
+                    "Token could not be transfered, try agin later"
+                )
+            }
+      })
+        
     } else {
         // check the time diffrence between the date now and last request
         let timeDiff = Date.now() - wallet.lastFunded
@@ -48,21 +50,22 @@ exports.Request = async (_req, _res) => {
             return fail(_res, 400, "You can only request once a day")
         }
         // send token
-        let { hash, rStatus } = await transferFund(address.split(","[0]), 30)
+        transferFund(address.split(","[0]), 30, function(json){
+             if (json.rStatus) {
+                walletDb.save({
+                    lastFunded: Date.now,
+                })
+                return success(_res, 200, "Fund transfered successfully")
+            } 
+            else {
+                return fail(
+                    _res,
+                    500,
+                    "Token could not be transfered, try agin later"
+                )
+            }
+        })
 
-        if (rStatus) {
-            console.log(hash)
-            walletDb.save({
-                lastFunded: Date.now,
-            })
-            return success(_res, 200, "Fund transfered successfully")
-        } else {
-            return fail(
-                _res,
-                500,
-                "Token could not be transfered, try agin later"
-            )
-        }
     }
 
     // then send token
