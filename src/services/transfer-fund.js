@@ -19,6 +19,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(API_URL))
 // const privateKey = Buffer.from(PRIVATE_KEY, "hex")
 
 exports.transferFund = async (recieverData, amountToSend, callback) => {
+    console.log("came here")
     try {
         const nonce = await web3.eth.getTransactionCount(PUBLIC_KEY, "latest") // nonce starts counting from 0
         let result = await web3.eth.getBalance(PUBLIC_KEY)
@@ -50,7 +51,7 @@ exports.transferFund = async (recieverData, amountToSend, callback) => {
         await web3.eth
             .sendSignedTransaction(signedTx.rawTransaction)
             .on("receipt", function (receipt) {
-                   callback({ hash: receipt.transactionHash, rStatus: true})
+                callback({ hash: receipt.transactionHash, rStatus: true })
             })
     } catch (error) {
         console.log(error)

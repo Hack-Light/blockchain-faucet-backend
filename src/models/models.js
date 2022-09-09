@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-param-reassign */
 /* eslint-disable eqeqeq */
 /* eslint-disable consistent-return */
@@ -16,8 +17,6 @@
 const mongoose = require("mongoose")
 const Schema = mongoose.Schema
 const uuid = require("uuid")
-
-
 
 // creating REQUEST database class
 class _Request {
@@ -60,7 +59,7 @@ class _Request {
         }
         new this.model(mData).save((err) => {
             if (err) return { status: "error", msg: "Internal database error" }
-            return { status: true , _id}
+            return { status: true, _id }
         })
     }
 
@@ -83,7 +82,6 @@ class _Request {
                     p !== "invalid"
                 ) {
                     return { status: "error", msg: "Invalid status data" }
-                   
                 }
             }
             let p = {}
@@ -132,7 +130,7 @@ class _Request {
             // find the request dat
             this.model.find({ id: id }, (err, res) => {
                 if (err)
-                    return{ status: "error", msg: "Internal database error" }
+                    return { status: "error", msg: "Internal database error" }
                 if (res != null) {
                     res = res[0]
                     let p = {
@@ -143,7 +141,7 @@ class _Request {
                         finished: res.finished,
                         tx: res.tx,
                     }
-                    return { status: true , p}
+                    return { status: true, p }
                 }
             })
         } else {
@@ -166,14 +164,14 @@ class _Wallet {
             "wallet",
             new Schema({
                 id: String,
-                address: String,
+                address: Array,
                 lastfunded: Number,
                 amount: Number,
             })
         )
     }
 
-    create(addr) {
+    create(addr, callback) {
         /*
         This functions create a new wallet
         data and store in the database
@@ -181,27 +179,44 @@ class _Wallet {
       */
         // create id
         let _id = uuid.v4()
-        let mData = { id: _id, lastfunded: 0, address: addr.address + "", amount: 0 }
-        new this.model(mData).save((err) => {
-            if (err) return{ status: "error", msg: "Internal database error" }
-            return { status: true , _id}
+        let mData = {
+            id: _id,
+            lastfunded: Date.now(),
+            address: addr,
+            amount: 0,
+        }
+
+        console.log("Creating new wallet", mData)
+        this.model.create(mData, (err, data) => {
+            console.log(err, data)
+            if (err) {
+                return callback({
+                    status: false,
+                    msg: "Internal database error",
+                })
+            }
+
+            console.log("saved")
+            return callback({ status: true, _id: data.id })
         })
     }
 
-    save(params) {
+    save(params, callback) {
         /*
         This functions saves or modify a wallet
         data and store in the database
         It returns either true|false|null
       */
         // get the specified request from database
+
+        console.log("params", params)
         if (params.id != undefined && params.id != null) {
             let p = {}
             if (params.lastfunded) {
                 p.lastfunded = params.lastfunded
             }
             if (params.address) {
-                p.address = params.address + ""
+                p.address = params.address
             }
             if (params.amount) {
                 p.amount = params.amount
@@ -212,18 +227,18 @@ class _Wallet {
                 { new: true },
                 (err, res) => {
                     if (err)
-                        return{
-                            status: "error",
+                        callback({
+                            status: false,
                             msg: "Internal database error",
-                        }
+                        })
                     if (res != null) {
-                        return { status: true }
+                        callback({ status: true })
                     }
                 }
             )
         } else {
             // no request id found
-            return{ status: "error", msg: "No request id found" }
+            return callback({ status: false, msg: "No request id found" })
         }
     }
 
@@ -246,7 +261,7 @@ class _Wallet {
                         address: res.address,
                         amount: res.amount,
                     }
-                    return { status: true , p}
+                    return { status: true, p }
                 }
             })
         } else {
@@ -255,7 +270,7 @@ class _Wallet {
         }
     }
 
-    find(addr) {
+    find(addr, callback) {
         /*
         This functions finds a wallet
         data and using any address given  
@@ -263,28 +278,35 @@ class _Wallet {
       */
         if (addr) {
             // find the request dat
-            this.model.find((err, res) => {
-                if (err)
-                  return  { status: "error", msg: "Internal database error" }
-                for (let i = 0; i < res.length; i++) {
-                    // turn address to array
-                    if (res[i].address.split(",").includes(addr)) {
-                        // has found
-                        let p = {
-                            lastfunded: res[i].lastfunded,
-                            id: res[i].id,
-                            address: res[i].address,
-                            amount: res[i].amount,
-                        }
-                        return { status: true , p}
-                       
-                    }
+            this.model.find({ address: addr }, (err, res) => {
+                console.log("db res", res)
+                if (err || res.length == 0) {
+                    return callback({
+                        status: false,
+                        msg: "Internal database error",
+                    })
                 }
-                return { status: true }
+                let p = res[0]
+                return callback({ status: true, data: p })
+
+                // for (let i = 0; i < res.length; i++) {
+                //     console.log(res)
+                //     // turn address to array
+                //     if (res[i].address.split(",").includes(addr)) {
+                //         // has found
+                //         p = {
+                //             lastfunded: res[i].lastfunded,
+                //             id: res[i].id,
+                //             address: res[i].address,
+                //             amount: res[i].amount,
+                //         }
+                //         // return callback({ status: true, p })
+                //     }
+                // }
             })
         } else {
             // no request id found
-            return{ status: "error", msg: "No address found" }
+            callback({ status: false, msg: "No address found" })
         }
     }
 }
