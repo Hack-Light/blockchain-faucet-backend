@@ -24,15 +24,15 @@ exports.Request = async (_req, _res) => {
     walletDb.find(address[0], (wallet) => {
         console.log("me tye", wallet)
         if (!wallet.status) {
-            walletDb.create(address, ({ status, id }) => {
+            walletDb.create(address, ({ status, _id }) => {
                 // send token
                 if (status) {
                     transferFund(address[0], 30, (json) => {
                         if (json.rStatus) {
                             walletDb.save(
                                 {
-                                    id,
-                                    lastFunded: Date.now,
+                                    _id,
+                                    lastFunded: Date.now(),
                                 },
                                 (res) => {
                                     if (res.status) {
